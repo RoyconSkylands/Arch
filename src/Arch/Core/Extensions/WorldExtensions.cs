@@ -166,6 +166,7 @@ public static class WorldExtensions
     [StructuralChange]
     public static void AddRange(this World world, Entity entity, IList<ComponentType> components)
     {
+        world.ThrowIfStructuralChanges();
         var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
@@ -226,6 +227,7 @@ public static class WorldExtensions
     [StructuralChange]
     public static void RemoveRange(this World world, Entity entity, IList<ComponentType> types)
     {
+        world.ThrowIfStructuralChanges();
         var oldArchetype = world.EntityInfo.GetArchetype(entity.Id);
 
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.

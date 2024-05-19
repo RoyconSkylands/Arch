@@ -244,6 +244,8 @@ public partial class World : IDisposable
     [StructuralChange]
     public void Reserve(Span<ComponentType> types, int amount)
     {
+        ThrowIfStructuralChanges();
+
         var archetype = GetOrCreate(types);
         archetype.Reserve(amount);
 
@@ -265,6 +267,8 @@ public partial class World : IDisposable
     [StructuralChange]
     public Entity Create(params ComponentType[] types)
     {
+        ThrowIfStructuralChanges();
+
         return Create(types.AsSpan());
     }
 
@@ -281,6 +285,8 @@ public partial class World : IDisposable
     [StructuralChange]
     public Entity Create(Span<ComponentType> types)
     {
+        ThrowIfStructuralChanges();
+
         // Recycle id or increase
         var recycle = RecycledIds.TryDequeue(out var recycledId);
         var recycled = recycle ? recycledId : new RecycledEntity(Size, 1);
@@ -357,6 +363,8 @@ public partial class World : IDisposable
     [StructuralChange]
     public void Destroy(Entity entity)
     {
+        ThrowIfStructuralChanges();
+
         #if EVENTS
         // Raise the OnComponentRemoved event for each component on the entity.
         var arch = GetArchetype(entity);
@@ -393,6 +401,8 @@ public partial class World : IDisposable
     [StructuralChange]
     public void TrimExcess()
     {
+        ThrowIfStructuralChanges();
+
         Capacity = 0;
 
         // Trim entity info and archetypes
@@ -427,6 +437,8 @@ public partial class World : IDisposable
     [StructuralChange]
     public void Clear()
     {
+        ThrowIfStructuralChanges();
+
         Capacity = 0;
         Size = 0;
 
@@ -567,6 +579,8 @@ public partial class World : IDisposable
     [StructuralChange]
     public void Dispose()
     {
+        ThrowIfStructuralChanges();
+
         Destroy(this);
         // In case the user (or us) decides to override and provide a finalizer, prevents them from having
         // to re-implement Dispose() to avoid calling it twice.
@@ -791,6 +805,8 @@ public partial class World
     [StructuralChange]
     public void Destroy(in QueryDescription queryDescription)
     {
+        ThrowIfStructuralChanges();
+
         var query = Query(in queryDescription);
         foreach (var archetype in query.GetArchetypeIterator())
         {
@@ -866,6 +882,8 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add<T>(in QueryDescription queryDescription, in T? component = default)
     {
+        ThrowIfStructuralChanges();
+
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
 
@@ -918,6 +936,8 @@ public partial class World
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove<T>(in QueryDescription queryDescription)
     {
+        ThrowIfStructuralChanges();
+
         // BitSet to stack/span bitset, size big enough to contain ALL registered components.
         Span<uint> stack = stackalloc uint[BitSet.RequiredLength(ComponentRegistry.Size)];
 
@@ -1068,6 +1088,8 @@ public partial class World
     [StructuralChange]
     public ref T AddOrGet<T>(Entity entity, T? component = default)
     {
+        ThrowIfStructuralChanges();
+
         ref T cmp = ref TryGetRef<T>(entity, out var exists);
         if (exists)
         {
@@ -1093,6 +1115,8 @@ public partial class World
     [StructuralChange]
     internal void Add<T>(Entity entity, out Archetype newArchetype, out Slot slot)
     {
+        ThrowIfStructuralChanges();
+
         var oldArchetype = EntityInfo.GetArchetype(entity.Id);
         var type = Component<T>.ComponentType;
         newArchetype = GetOrCreateArchetypeByAddEdge(in type, oldArchetype);
